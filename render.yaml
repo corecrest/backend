@@ -1,0 +1,14 @@
+services:
+  # A Docker web service
+  - type: web
+    name: bff-backend
+    runtime: python
+    plan: free
+    autoDeploy: false
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: API_KEY
+        sync: false # This means you'll need to set it manually in Render dashboard
+      - key: PYTHON_VERSION
+        value: 3.11.0 
