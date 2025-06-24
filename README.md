@@ -23,7 +23,7 @@ NOTIFICATION_ENDPOINT=your_notification_endpoint_url
 
 4. Run the server:
 ```bash
-uvicorn app.main:app --reload
+uvicorn main:app --reload
 ```
 
 ## API Endpoints
