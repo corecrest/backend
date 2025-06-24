@@ -5,10 +5,20 @@ services:
     runtime: python
     plan: free
     autoDeploy: false
-    buildCommand: pip install -r requirements.txt
+    buildCommand: |
+      # Install Rust
+      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+      source "$HOME/.cargo/env"
+      # Create writable directories for Rust
+      mkdir -p /opt/render/project/src/.cargo
+      # Install dependencies
+      pip install --upgrade pip wheel setuptools
+      pip install -r requirements.txt
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: API_KEY
         sync: false # This means you'll need to set it manually in Render dashboard
       - key: PYTHON_VERSION
-        value: 3.11.0 
+        value: 3.11.0
+      - key: CARGO_HOME
+        value: /opt/render/project/src/.cargo 
