@@ -20,6 +20,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# API key configuration for different sources
+API_KEYS = {
+    "corecrest": os.getenv("CORECREST_API_KEY"),
+    "portfolio": os.getenv("PORTFOLIO_API_KEY"),
+    "default": os.getenv("API_KEY")  # Fallback API key
+}
+
+# Single notification endpoint for all sources
+NOTIFICATION_ENDPOINT = "http://64.227.102.129:8000/api/v1/notifications/"
+
 class ContactForm(BaseModel):
     name: str
     email: str
@@ -48,6 +58,19 @@ class NotificationPayload(BaseModel):
     body: str
     priority: int = 2
     notification_type: str = "email"
+    source: str  # New field to identify the source
+
+def get_api_key(source: str) -> str:
+    """Get the API key for a given source"""
+    api_key = API_KEYS.get(source, API_KEYS["default"])
+    
+    if not api_key:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Server configuration error: Missing API key for source '{source}'"
+        )
+    
+    return api_key
 
 def format_email_body(form_type: str, form_data: Dict[str, Any]) -> str:
     """Format form data into a readable email body"""
@@ -66,23 +89,16 @@ async def submit_form(
     
     Args:
         form_type: Type of form being submitted (e.g., 'contact', 'feedback', 'registration')
-        notification: The notification payload
+        notification: The notification payload including source
     """
     try:
-        # Get environment variables
-        notification_endpoint = os.getenv("NOTIFICATION_ENDPOINT", "http://64.227.102.129:8000/api/v1/notifications/")
-        api_key = os.getenv("API_KEY")
-
-        if not api_key:
-            raise HTTPException(
-                status_code=500,
-                detail="Server configuration error: Missing API key"
-            )
+        # Get API key based on source
+        api_key = get_api_key(notification.source)
 
         # Send the notification
         response = requests.post(
-            notification_endpoint,
-            json=notification.model_dump(),
+            NOTIFICATION_ENDPOINT,
+            json=notification.model_dump(exclude={'source'}),  # Exclude source from payload
             headers={
                 "accept": "application/json",
                 "x-api-key": api_key,
@@ -98,7 +114,7 @@ async def submit_form(
 
         return {
             "status": "success",
-            "message": f"{form_type} form submitted successfully"
+            "message": f"{form_type} form submitted successfully from {notification.source}"
         }
 
     except requests.RequestException as e:
@@ -112,4 +128,8 @@ async def root():
     """
     Root endpoint to verify the API is running
     """
-    return {"status": "ok", "message": "Form submission API is running"} 
+    return {
+        "status": "ok", 
+        "message": "Form submission API is running",
+        "available_sources": list(API_KEYS.keys())
+    } 
