@@ -24,7 +24,8 @@ app.add_middleware(
 API_KEYS = {
     "corecrest": os.getenv("CORECREST_API_KEY"),
     "portfolio": os.getenv("PORTFOLIO_API_KEY"),
-    "default": os.getenv("API_KEY")  # Fallback API key
+    "default": os.getenv("API_KEY"), # Fallback API key
+    "test": os.getenv("TEST_API_KEY")  
 }
 
 # Single notification endpoint for all sources
