@@ -27,7 +27,8 @@ API_KEYS = {
     "default": os.getenv("API_KEY"), # Fallback API key
     "test": os.getenv("TEST_API_KEY"),
     "Main Portfolio": os.getenv("MAIN_PORTFOLIO_API_KEY"),
-    "QR Code Generator": os.getenv("QR_CODE_GENERATOR_API_KEY")
+    "QR Code Generator": os.getenv("QR_CODE_GENERATOR_API_KEY"),
+    "Umwirondoro": os.getenv("UMWIRONDORO_API_KEY")
 }
 
 # Single notification endpoint for all sources
