@@ -35,6 +35,9 @@ API_KEYS = {
 # Single notification endpoint for all sources
 NOTIFICATION_ENDPOINT = "http://64.227.102.129:8000/api/v1/notifications/"
 
+# Notification endpoint for all sources
+NOTIFICATION_ENDPOINT_FOR_FORM_SUBMISSION = "http://64.227.102.129:8000/api/v1/notifications-form/"
+
 class ContactForm(BaseModel):
     name: str
     email: str
@@ -64,6 +67,16 @@ class NotificationPayload(BaseModel):
     priority: int = 2
     notification_type: str = "email"
     source: str  # New field to identify the source
+
+class FormNotificationPayload(BaseModel):
+    recipient: str
+    subject: str
+    body: str
+    body_type: Optional[str] = None
+    priority: int = 2
+    notification_type: str = "email"
+    content_encoding: str = "plain"
+    source: str
 
 def get_api_key(source: str) -> str:
     """Get the API key for a given source"""
@@ -138,3 +151,42 @@ async def root():
         "message": "Form submission API is running",
         "available_sources": list(API_KEYS.keys())
     } 
+
+@app.post("/api/submit-form")
+async def submit_form_notification(
+    notification: FormNotificationPayload
+):
+    """
+    Submit form notification data to the form-specific notification endpoint.
+    Expects recipient, subject, body, optional body_type, priority, notification_type,
+    and content_encoding (defaults to "plain").
+    """
+    try:
+        api_key = get_api_key(notification.source)
+
+        response = requests.post(
+            NOTIFICATION_ENDPOINT_FOR_FORM_SUBMISSION,
+            json=notification.model_dump(exclude={"source"}),
+            headers={
+                "accept": "application/json",
+                "x-api-key": api_key,
+                "Content-Type": "application/json"
+            }
+        )
+
+        if response.status_code >= 400:
+            raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Failed to send form notification: {response.text}"
+            )
+
+        return {
+            "status": "success",
+            "message": f"form submitted successfully from {notification.source}"
+        }
+
+    except requests.RequestException as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to send form notification: {str(e)}"
+        )
