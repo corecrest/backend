@@ -153,6 +153,7 @@ async def root():
     } 
 
 @app.post("/api/submit-form")
+@app.post("/api/submit-form/")
 async def submit_form_notification(request: Request):
     """
     Submit form notification data to the form-specific notification endpoint.
