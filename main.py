@@ -36,7 +36,7 @@ API_KEYS = {
 NOTIFICATION_ENDPOINT = "http://64.227.102.129:8000/api/v1/notifications/"
 
 # Notification endpoint for all sources
-NOTIFICATION_ENDPOINT_FOR_FORM_SUBMISSION = "http://64.227.102.129:8000/api/v1/notifications/notifications-form/"
+NOTIFICATION_ENDPOINT_FOR_FORM_SUBMISSION = "http://192.168.50.105:8000/api/v1/notifications/notifications-form/"
 
 class ContactForm(BaseModel):
     name: str
