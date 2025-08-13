@@ -153,7 +153,7 @@ async def root():
     } 
 
 @app.post("/api/submit-form")
-async def submit_form_notification(request: Request, source: str):
+async def submit_form_notification(request: Request):
     """
     Submit form notification data to the form-specific notification endpoint.
     Accepts form-encoded payload (as received) and forwards it unchanged, except:
@@ -161,10 +161,14 @@ async def submit_form_notification(request: Request, source: str):
     - Uses `source` query parameter to resolve the API key and does not forward it.
     """
     try:
-        api_key = get_api_key(source)
-
         incoming_form = await request.form()
         form_payload = dict(incoming_form)
+
+        source = form_payload.pop("source", None)
+        if not source:
+            raise HTTPException(status_code=400, detail="Missing 'source' in form data")
+
+        api_key = get_api_key(source)
 
         if not form_payload.get("content_encoding"):
             form_payload["content_encoding"] = "plain"
