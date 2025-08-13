@@ -153,24 +153,28 @@ async def root():
     } 
 
 @app.post("/api/submit-form")
-async def submit_form_notification(
-    notification: FormNotificationPayload
-):
+async def submit_form_notification(request: Request, source: str):
     """
     Submit form notification data to the form-specific notification endpoint.
-    Expects recipient, subject, body, optional body_type, priority, notification_type,
-    and content_encoding (defaults to "plain").
+    Accepts form-encoded payload (as received) and forwards it unchanged, except:
+    - Adds default content_encoding="plain" if not provided.
+    - Uses `source` query parameter to resolve the API key and does not forward it.
     """
     try:
-        api_key = get_api_key(notification.source)
+        api_key = get_api_key(source)
+
+        incoming_form = await request.form()
+        form_payload = dict(incoming_form)
+
+        if not form_payload.get("content_encoding"):
+            form_payload["content_encoding"] = "plain"
 
         response = requests.post(
             NOTIFICATION_ENDPOINT_FOR_FORM_SUBMISSION,
-            json=notification.model_dump(exclude={"source"}),
+            data=form_payload,
             headers={
                 "accept": "application/json",
-                "x-api-key": api_key,
-                "Content-Type": "application/json"
+                "x-api-key": api_key
             }
         )
 
@@ -182,7 +186,7 @@ async def submit_form_notification(
 
         return {
             "status": "success",
-            "message": f"form submitted successfully from {notification.source}"
+            "message": f"form submitted successfully from {source}"
         }
 
     except requests.RequestException as e:
