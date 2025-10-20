@@ -4,10 +4,15 @@ from pydantic import BaseModel, EmailStr
 from typing import Dict, Any, Optional
 import requests
 import os
+import logging
 from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Form Submission API")
 
@@ -64,6 +69,7 @@ class NotificationPayload(BaseModel):
     recipient: str
     subject: str
     body: str
+    body_type: Optional[str] = None
     priority: int = 2
     notification_type: str = "email"
     source: str  # New field to identify the source
@@ -110,13 +116,20 @@ async def submit_form(
         notification: The notification payload including source
     """
     try:
+        # Log incoming request data
+        logger.info(f"Received {form_type} form submission with notification data: {notification.model_dump()}")
+        
         # Get API key based on source
         api_key = get_api_key(notification.source)
 
+        # Prepare payload and log it
+        payload = notification.model_dump(exclude={'source'})  # Exclude source from payload
+        logger.info(f"Sending notification to {NOTIFICATION_ENDPOINT} with payload: {payload}")
+        
         # Send the notification
         response = requests.post(
             NOTIFICATION_ENDPOINT,
-            json=notification.model_dump(exclude={'source'}),  # Exclude source from payload
+            json=payload,
             headers={
                 "accept": "application/json",
                 "x-api-key": api_key,
@@ -164,6 +177,9 @@ async def submit_form_notification(request: Request):
     try:
         incoming_form = await request.form()
         form_payload = dict(incoming_form)
+        
+        # Log incoming form data
+        logger.info(f"Received form submission with raw form data: {form_payload}")
 
         source = form_payload.pop("source", None)
         if not source:
@@ -173,6 +189,9 @@ async def submit_form_notification(request: Request):
 
         if not form_payload.get("content_encoding"):
             form_payload["content_encoding"] = "plain"
+
+        # Log the payload being sent (after processing)
+        logger.info(f"Sending form notification to {NOTIFICATION_ENDPOINT_FOR_FORM_SUBMISSION} with processed payload: {form_payload}")
 
         response = requests.post(
             NOTIFICATION_ENDPOINT_FOR_FORM_SUBMISSION,
