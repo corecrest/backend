@@ -35,7 +35,8 @@ API_KEYS = {
     "QR Code Generator": os.getenv("QR_CODE_GENERATOR_API_KEY"),
     "Umwirondoro": os.getenv("UMWIRONDORO_API_KEY"),
     "Manga Scrapper": os.getenv("MANGA_SCRAPPER_API_KEY"),
-    "AppTrail":os.getenv("APPTRAIL_API_KEY")
+    "AppTrail":os.getenv("APPTRAIL_API_KEY"),
+    "MangaTracker":os.getenv("MANGA_TRACKER_API_KEY"),
 }
 
 # Single notification endpoint for all sources
