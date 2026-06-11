@@ -37,6 +37,7 @@ API_KEYS = {
     "Manga Scrapper": os.getenv("MANGA_SCRAPPER_API_KEY"),
     "AppTrail":os.getenv("APPTRAIL_API_KEY"),
     "MangaTracker":os.getenv("MANGA_TRACKER_API_KEY"),
+    "QRFlow":os.getenv("QRFLOW_API_KEY"),
 }
 
 # Single notification endpoint for all sources
