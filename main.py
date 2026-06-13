@@ -41,10 +41,10 @@ API_KEYS = {
 }
 
 # Single notification endpoint for all sources
-NOTIFICATION_ENDPOINT = "http://67.205.161.68:8000/api/v1/notifications/"
+NOTIFICATION_ENDPOINT = "https://mailerapi.corecrest.tech/api/v1/notifications/"
 
 # Notification endpoint for all sources
-NOTIFICATION_ENDPOINT_FOR_FORM_SUBMISSION = "http://67.205.161.68:8000/api/v1/notifications/notifications-form/"
+NOTIFICATION_ENDPOINT_FOR_FORM_SUBMISSION = "https://mailerapi.corecrest.tech/api/v1/notifications/notifications-form/"
 
 class ContactForm(BaseModel):
     name: str
